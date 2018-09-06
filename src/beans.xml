@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+	<bean id="dog" class="Dog">
+		<property name="name" value="旺财"></property>
+		<property name="weight" value="23.6"></property>
+	</bean>
+	
+	<bean id="student" class="Student">
+		<property name="id" value="10001"></property>
+		<property name="name" value="teenyda"></property>
+		<property name="height" value="174"></property>
+	</bean>
+	
+</beans>
