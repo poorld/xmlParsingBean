@@ -18,36 +18,44 @@ import org.jsoup.select.Elements;
 public class JsoupTest {
 
 	public static void main(String[] args) {
-		String path = JsoupTest.class.getResource("beans.xml").getFile();
-		Map<String, Object> beans = getBean(path);
-		// Êä³öËùÓĞ¶ÔÏó
-		System.out.println(beans);
-		//»ñÈ¡Student
-		Student stu = (Student) beans.get("student");
-		System.out.println(stu);
+		Student student = (Student) getBean("student");
+		System.out.println(student);
+		
+		Dog dog = (Dog) getBean("dog");
+		System.out.println(dog);
+	}
+	
+	public static Object getBean(String id){
+		Map<String, Object> beans = analysisXml();
+		Object object = beans.get(id);
+		if (object != null){
+			return object;
+		}
+		return null;
 	}
 
 	/**
-	 * ½âÎöxml
+	 * è§£æxml
 	 * 
 	 * @param path
 	 * @return
 	 */
-	public static Map<String, Object> getBean(String path) {
+	public static Map<String, Object> analysisXml() {
+		String path = JsoupTest.class.getResource("beans.xml").getFile();
 		Map<String, Object> map = new HashMap<String, Object>();
 		File file = new File(path);
 		Element bean = null;
 		try {
 			Document dom = Jsoup.parse(file, "utf-8");
-			// »ñÈ¡<beans>½Úµã
+			// è·å–<beans>èŠ‚ç‚¹
 			Elements beansElements = dom.getElementsByTag("beans");
-			// bean½ÚµãÊÇ·ñÎª¿Õ£¬Îª¿ÕÔòreturn null
+			// beanèŠ‚ç‚¹æ˜¯å¦ä¸ºç©ºï¼Œä¸ºç©ºåˆ™return null
 			if (beansElements.isEmpty())
 				return null;
 
-			// »ñÈ¡µÚÒ»¸ö<beans>
+			// è·å–ç¬¬ä¸€ä¸ª<beans>
 			Element beansElement = beansElements.get(0);
-			// »ñÈ¡bean½Úµã
+			// è·å–beanèŠ‚ç‚¹
 			Elements beanElements = beansElement.getElementsByTag("bean");
 			if (beanElements.isEmpty())
 				return null;
@@ -55,27 +63,27 @@ public class JsoupTest {
 			int beanElementsSize = beanElements.size();
 
 			for (int i = 0; i < beanElementsSize; i++) {
-				// Ê¹ÓÃmapÀ´×°¶ÔÏóµÄÊôĞÔÖµ
+				// ä½¿ç”¨mapæ¥è£…å¯¹è±¡çš„å±æ€§å€¼
 				Map<String, String> props = null;
 				bean = beanElements.get(i);
-				// ÊÇ·ñÓĞidÊôĞÔ
+				// æ˜¯å¦æœ‰idå±æ€§
 				if (!bean.hasAttr("id")) {
-					System.out.println("µÚ" + (i + 1) + "¸ö<bean>½ÚµãÃ»ÓĞidÊôĞÔ,Çë¼ì²é");
+					System.out.println("ç¬¬" + (i + 1) + "ä¸ª<bean>èŠ‚ç‚¹æ²¡æœ‰idå±æ€§,è¯·æ£€æŸ¥");
 					continue;
 				}
 
-				// ÊÇ·ñÓĞclassÊôĞÔ
+				// æ˜¯å¦æœ‰classå±æ€§
 				if (!bean.hasAttr("class")) {
-					System.out.println("µÚ" + (i + 1) + "¸ö<bean>½ÚµãÃ»ÓĞclassÊôĞÔ,Çë¼ì²é");
+					System.out.println("ç¬¬" + (i + 1) + "ä¸ª<bean>èŠ‚ç‚¹æ²¡æœ‰classå±æ€§,è¯·æ£€æŸ¥");
 					continue;
 				}
 
-				// »ñÈ¡idÖµ
+				// è·å–idå€¼
 				String id = bean.attr("id");
-				// »ñÈ¡classÖµ
+				// è·å–classå€¼
 				String className = bean.attr("class");
 
-				// ÊÇ·ñÓĞproperty½Úµã,ÓĞÔòÊ¹ÓÃÄÚÊ¡¸ø¶ÔÏó¸³Öµ
+				// æ˜¯å¦æœ‰propertyèŠ‚ç‚¹,æœ‰åˆ™ä½¿ç”¨å†…çœç»™å¯¹è±¡èµ‹å€¼
 				Elements propertyElements = bean.getElementsByTag("property");
 				if (!propertyElements.isEmpty()) {
 					props = analysisProperty(propertyElements);
@@ -86,7 +94,7 @@ public class JsoupTest {
 
 				map.put(id, obj);
 
-				// ¸ø¶ÔÏó¸³Öµ£¬Ã»ÓĞproperty½ÚµãÔòÌø¹ı
+				// ç»™å¯¹è±¡èµ‹å€¼ï¼Œæ²¡æœ‰propertyèŠ‚ç‚¹åˆ™è·³è¿‡
 				if (props == null)
 					continue;
 
@@ -98,13 +106,13 @@ public class JsoupTest {
 						Type genericType = fields[k].getGenericType();
 						String typeName = genericType.getTypeName();
 						Object val = typeTransformation(typeName,value);
-						// Ê¹ÓÃÄÚÊ¡api²Ù×÷beanÊôĞÔ
+						// ä½¿ç”¨å†…çœapiæ“ä½œbeanå±æ€§
 						// PropertyDescriptor pd = new PropertyDescriptor("name", obj.getClass());
 						PropertyDescriptor pd = new PropertyDescriptor(name, obj.getClass());
-						// »ñÈ¡set·½·¨
+						// è·å–setæ–¹æ³•
 						Method writeMethod = pd.getWriteMethod();
 						writeMethod.setAccessible(true);
-						// ¸³Öµ
+						// èµ‹å€¼
 						writeMethod.invoke(obj, val);
 					}
 				}
@@ -118,7 +126,7 @@ public class JsoupTest {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			System.out.println(bean);
-			System.out.println("ÎŞ·¨ÕÒµ½"+e.getMessage()+"Õâ¸öÀà");
+			System.out.println("æ— æ³•æ‰¾åˆ°"+e.getMessage()+"è¿™ä¸ªç±»");
 			e.printStackTrace();
 		} catch (SecurityException e) {
 			e.printStackTrace();
@@ -134,7 +142,7 @@ public class JsoupTest {
 	}
 
 	/**
-	 * ÀàĞÍ×ª»»
+	 * ç±»å‹è½¬æ¢
 	 * @param type
 	 * @param value
 	 * @return
@@ -166,7 +174,7 @@ public class JsoupTest {
 	}
 
 	/**
-	 * ½âÎö<property>½Úµã»ñÈ¡ÊôĞÔ
+	 * è§£æ<property>èŠ‚ç‚¹è·å–å±æ€§
 	 * 
 	 * @param elements
 	 * @return
@@ -175,9 +183,9 @@ public class JsoupTest {
 		Map<String, String> map = new HashMap<String, String>();
 		for (int i = 0; i < elements.size(); i++) {
 			Element propertyElement = elements.get(i);
-			// ÊÇ·ñÓĞname
+			// æ˜¯å¦æœ‰name
 			if (propertyElement.hasAttr("name")) {
-				// ÊÇ·ñÓĞvalue
+				// æ˜¯å¦æœ‰value
 				if (propertyElement.hasAttr("value")) {
 					String name = propertyElement.attr("name");
 					String value = propertyElement.attr("value");
